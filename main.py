@@ -5,7 +5,6 @@ from oauth2client.service_account import ServiceAccountCredentials
 import config  
 import datetime
 import threading
-from server import run_server  
 
 def connect_to_gsheet():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
@@ -95,18 +94,14 @@ def main() -> None:
     application = Application.builder().token(config.token).build()
     application.bot_data['google_sheet_client'] = google_sheet_client
 
-    server_thread = threading.Thread(target=run_server)
-    server_thread.daemon = True
-    server_thread.start()
 
-    # Добавление обработчиков команд
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CallbackQueryHandler(button))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
     application.add_handler(CommandHandler("view_sheet", view_sheet))
     application.add_handler(CommandHandler("edit_sheet", edit_sheet))
 
-    # Запуск приложения
+
     application.run_polling()
 
 if __name__ == '__main__':
