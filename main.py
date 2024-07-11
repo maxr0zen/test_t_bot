@@ -16,7 +16,7 @@ def connect_to_gsheet():
 async def view_sheet(update: Update, context: CallbackContext) -> None:
     try:
         client = context.bot_data['google_sheet_client']
-        sheet = client.open("Telegram Bot Sheet").sheet1  # Имя вашего Google Sheet
+        sheet = client.open("Telegram Bot Sheet").sheet1  
         data = sheet.get_all_values()
         formatted_data = '\n'.join(
             [f'({i + 1}, {chr(65 + j)}) = {data[i][j]}' for i in range(len(data)) for j in range(len(data[i]))])
