@@ -2,9 +2,9 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, CallbackContext
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-import config  
+import config
 import datetime
-import threading
+
 
 def connect_to_gsheet():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
@@ -12,16 +12,19 @@ def connect_to_gsheet():
     client = gspread.authorize(creds)
     return client
 
+
 async def view_sheet(update: Update, context: CallbackContext) -> None:
     try:
         client = context.bot_data['google_sheet_client']
         sheet = client.open("Telegram Bot Sheet").sheet1  # Имя вашего Google Sheet
         data = sheet.get_all_values()
-        formatted_data = '\n'.join([f'({i+1}, {chr(65+j)}) = {data[i][j]}' for i in range(len(data)) for j in range(len(data[i]))])
+        formatted_data = '\n'.join(
+            [f'({i + 1}, {chr(65 + j)}) = {data[i][j]}' for i in range(len(data)) for j in range(len(data[i]))])
         await update.message.reply_text(f'Данные из таблицы:\n{formatted_data}')
     except gspread.exceptions.SpreadsheetNotFound as e:
         await update.message.reply_text('Не удалось найти указанную таблицу Google Sheets.')
         print(e)
+
 
 async def edit_sheet(update: Update, context: CallbackContext) -> None:
     args = context.args
@@ -45,15 +48,17 @@ async def edit_sheet(update: Update, context: CallbackContext) -> None:
         await update.message.reply_text('Не удалось найти указанную ячейку в таблице Google Sheets.')
         print(e)
 
+
 async def start(update: Update, context: CallbackContext) -> None:
     keyboard = [
         [InlineKeyboardButton("Кнопка 1", url="https://yandex.ru/maps/?text=Ленина%201")],
-        [InlineKeyboardButton("Кнопка 2", url="http://localhost:8000/payment/payment.html")],  
+        [InlineKeyboardButton("Кнопка 2", url="https://maxr0zen.github.io/test_t_bot/payment/payment.html")],
         [InlineKeyboardButton("Кнопка 3", callback_data='send_image')],
         [InlineKeyboardButton("Кнопка 4", callback_data='get_sheet_value')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text('Выберите опцию:', reply_markup=reply_markup)
+
 
 async def button(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
@@ -72,28 +77,32 @@ async def button(update: Update, context: CallbackContext) -> None:
         except gspread.exceptions.CellNotFound:
             await query.message.reply_text('Не удалось найти указанную ячейку в таблице Google Sheets.')
 
+
 async def handle_text(update: Update, context: CallbackContext) -> None:
     user_input = update.message.text
-    date_format = "%d.%m.%Y"  # Полный формат года
+    date_format = "%d.%m.%Y"
     try:
         date = datetime.datetime.strptime(user_input, date_format)
+        if date.date() != datetime.date.today():
+            raise ValueError("Дата не может быть в прошлом")
+
         client = context.bot_data['google_sheet_client']
         sheet = client.open("Telegram Bot Sheet").sheet1
-        sheet.append_row(['', date.strftime(date_format)], value_input_option='USER_ENTERED', insert_data_option='INSERT_ROWS')
+        sheet.append_row([date.strftime(date_format)], value_input_option='USER_ENTERED',
+                         insert_data_option='INSERT_ROWS')
         await update.message.reply_text('Дата верна')
     except ValueError:
         current_date = datetime.datetime.now().strftime(date_format)
-        await update.message.reply_text(f'Дата неверна, сегодня {current_date}')
+        await update.message.reply_text(f'Неверно, сегодня {current_date}')
     except gspread.exceptions.SpreadsheetNotFound:
         await update.message.reply_text('Не удалось найти указанную таблицу Google Sheets.')
 
+
 def main() -> None:
-    # Подключение к Google Sheets
     google_sheet_client = connect_to_gsheet()
 
     application = Application.builder().token(config.token).build()
     application.bot_data['google_sheet_client'] = google_sheet_client
-
 
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CallbackQueryHandler(button))
@@ -101,8 +110,8 @@ def main() -> None:
     application.add_handler(CommandHandler("view_sheet", view_sheet))
     application.add_handler(CommandHandler("edit_sheet", edit_sheet))
 
-
     application.run_polling()
+
 
 if __name__ == '__main__':
     main()
