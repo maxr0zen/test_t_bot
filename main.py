@@ -2,12 +2,11 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, CallbackContext
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-import config  # Файл с вашим токеном
+import config  
 import datetime
 import threading
-from server import run_server  # Импортируем функцию для запуска Flask-сервера
+from server import run_server  
 
-# Функция для подключения к Google Sheets
 def connect_to_gsheet():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
@@ -50,7 +49,7 @@ async def edit_sheet(update: Update, context: CallbackContext) -> None:
 async def start(update: Update, context: CallbackContext) -> None:
     keyboard = [
         [InlineKeyboardButton("Кнопка 1", url="https://yandex.ru/maps/?text=Ленина%201")],
-        [InlineKeyboardButton("Кнопка 2", url="http://localhost:8000/payment/payment.html")],  # Обновленная ссылка на локальный сервер
+        [InlineKeyboardButton("Кнопка 2", url="http://localhost:8000/payment/payment.html")],  
         [InlineKeyboardButton("Кнопка 3", callback_data='send_image')],
         [InlineKeyboardButton("Кнопка 4", callback_data='get_sheet_value')]
     ]
@@ -93,11 +92,9 @@ def main() -> None:
     # Подключение к Google Sheets
     google_sheet_client = connect_to_gsheet()
 
-    # Создание приложения Telegram бота
     application = Application.builder().token(config.token).build()
     application.bot_data['google_sheet_client'] = google_sheet_client
 
-    # Запуск Flask-сервера в отдельном потоке
     server_thread = threading.Thread(target=run_server)
     server_thread.daemon = True
     server_thread.start()
