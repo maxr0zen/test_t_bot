@@ -38,7 +38,7 @@ async def edit_sheet(update: Update, context: CallbackContext) -> None:
 
     try:
         client = context.bot_data['google_sheet_client']
-        sheet = client.open("Telegram Bot Sheet").sheet1  # Имя вашего Google Sheet
+        sheet = client.open("Telegram Bot Sheet").sheet1  
         sheet.update_acell(cell, text_to_insert)
         await update.message.reply_text(f'Значение ячейки {cell} обновлено на: {text_to_insert}')
     except gspread.exceptions.SpreadsheetNotFound as e:
