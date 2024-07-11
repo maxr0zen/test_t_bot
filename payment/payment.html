@@ -3,18 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Page</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Оплата через YooMoney</title>
 </head>
 <body>
-    <div class="container">
-        <h1>Оплата</h1>
-        <form id="payment-form">
-            <p>Сумма к оплате: 2 рубля</p>
-            <button type="submit">Оплатить</button>
-        </form>
-        <div id="message"></div>
-    </div>
-    <script src="script.js"></script>
+    <h1>Оплата через YooMoney</h1>
+    <form id="paymentForm" action="https://yoomoney.ru/quickpay/confirm.xml" method="post">
+        <input type="hidden" name="receiver" value="your_yoomoney_account_id">
+        <input type="hidden" name="formcomment" value="Payment for services">
+        <input type="hidden" name="short-dest" value="Payment for services">
+        <input type="hidden" name="label" value="order_id">
+        <input type="hidden" name="quickpay-form" value="shop">
+        <input type="hidden" name="targets" value="Payment for services">
+        <input type="hidden" name="sum" value="100.00" data-type="number">
+        <input type="hidden" name="comment" value="Payment for services">
+        <input type="hidden" name="successURL" value="https://your_website.com/success.html">
+        <input type="hidden" name="need-fio" value="false">
+        <input type="hidden" name="need-email" value="false">
+        <input type="hidden" name="need-phone" value="false">
+        <input type="submit" value="Оплатить">
+    </form>
+
+    <script>
+        document.getElementById('paymentForm').addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            this.submit();
+        });
+    </script>
 </body>
 </html>
